@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import useSound from 'use-sound';
+import soundFile from "./pokemon.mp3"
 
 function App() {
 
@@ -20,11 +22,19 @@ function App() {
 
 
     const [count, setCount] = useState(0);
-    const myRef = useRef(null);
+    const inputRef = useRef(null);
+    const imgRef = useRef(null);
+    const nameRef = useRef(null);
+
+    useEffect(() => {
+      play();
+    }, [])
+
+    const [play] = useSound(soundFile);
   
     const fetchData = async () => {
       try {
-        const pokemonName = myRef.current.value.toLowerCase();
+        const pokemonName = inputRef.current.value.toLowerCase();
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
         
         if (!response.ok) {
@@ -32,28 +42,34 @@ function App() {
         }
   
         const data = await response.json();
-        console.log(data.id, data.name);
+        const pokemonSprite = data.sprites.front_default
+        imgRef.current.src = pokemonSprite
+
+        //console.log(data.id, data.name, data);
+
+        const pokeName = data.name
+        const pokeId = data.id
+        nameRef.current.textContent = pokeId + ' ' +  pokeName
+
       } catch (error) {
         console.error(error);
       }
     };
   
-    const handleClick = () => {
-      setCount(count + 1);
-    };
   
     return (
       <>
-        <div className="counter">
-          <h3>{count}</h3>
-          <button onClick={handleClick}>Counter</button>
+      <h2>Choose Your Pokemon!</h2>
+      <div className="pokemon-container">
+        <input className='pokemon-input' type="text" ref={inputRef} placeholder="Enter a pokemon name" />
+        <button className='pokemon-button' onClick={fetchData}>Display Pokemon</button>
+        <div className="pokemon-view">
+          <h3 className='pokemon-name' ref={nameRef}></h3>
+          <img className='pokemon-img' onClick={play} ref={imgRef} src='' alt="Pokemon Sprite" id="pokemonSprite"/>
         </div>
-  
-        <input type="text" ref={myRef} placeholder="Enter a pokemon name" />
-        <button onClick={fetchData}>Display Pokemon</button>
-        <img src="" alt="Pokemon Sprite" id="pokemonSprite" style={{ display: 'relative' }} />
+      </div>
       </>
     );
   }
   
-  export default App;
+  export default App
